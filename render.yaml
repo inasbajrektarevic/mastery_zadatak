@@ -1,0 +1,16 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# After pushing to GitHub: Dashboard → New → Blueprint → connect this repo (uses render.yaml at root).
+services:
+  - type: web
+    name: mastery-task-doc-processing
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeployTrigger: commit
+    healthCheckPath: /
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production

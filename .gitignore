@@ -1,0 +1,21 @@
+## .NET / Visual Studio
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## SQLite / local data (regenerate on deploy)
+documents.db
+documents.db-*
+
+## Uploads / secrets
+.uploads/
+*.pfx
+
+## OS / IDE
+.DS_Store
+Thumbs.db
+.idea/

@@ -1,0 +1,2 @@
+Invoice TXT-1
+Total: 406 EUR

@@ -1,0 +1,158 @@
+@model mastery_task.Models.DocumentRecord
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Review Document";
+    var lineItemsJson = JsonSerializer.Serialize(Model.LineItems, new JsonSerializerOptions { WriteIndented = true });
+}
+
+<div class="container py-4">
+    <a asp-action="Index" class="btn btn-link px-0">← Back to dashboard</a>
+    <h3>Review Document #@Model.Id</h3>
+    <p class="text-muted">@Model.SourceFile</p>
+
+    @if (TempData["Success"] is string ok)
+    {
+        <div class="alert alert-success">@ok</div>
+    }
+    @if (TempData["Error"] is string err)
+    {
+        <div class="alert alert-danger">@err</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card p-3">
+                <h5>Extracted Data (read-only snapshot)</h5>
+                <p class="small text-muted mb-2">Use the form on the right to edit and save. After save, validation runs again.</p>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Type</dt><dd class="col-sm-8">@Model.DocumentType</dd>
+                    <dt class="col-sm-4">Supplier</dt><dd class="col-sm-8">@Model.SupplierName</dd>
+                    <dt class="col-sm-4">Number</dt><dd class="col-sm-8">@Model.DocumentNumber</dd>
+                    <dt class="col-sm-4">Issue date</dt><dd class="col-sm-8">@Model.IssueDate</dd>
+                    <dt class="col-sm-4">Due date</dt><dd class="col-sm-8">@Model.DueDate</dd>
+                    <dt class="col-sm-4">Currency</dt><dd class="col-sm-8">@Model.Currency</dd>
+                    <dt class="col-sm-4">Subtotal</dt><dd class="col-sm-8">@Model.Subtotal</dd>
+                    <dt class="col-sm-4">Tax</dt><dd class="col-sm-8">@Model.Tax</dd>
+                    <dt class="col-sm-4">Total</dt><dd class="col-sm-8">@Model.Total</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card p-3">
+                <h5>Edit &amp; confirm</h5>
+                <form method="post">
+                    <div class="mb-2">
+                        <label class="form-label">Document type</label>
+                        <select name="documentType" class="form-select">
+                            @if (string.IsNullOrEmpty(Model.DocumentType))
+                            {
+                                <option value="" selected>(not set)</option>
+                            }
+                            else
+                            {
+                                <option value="">(not set)</option>
+                            }
+                            @if (Model.DocumentType == "invoice")
+                            {
+                                <option value="invoice" selected>invoice</option>
+                            }
+                            else
+                            {
+                                <option value="invoice">invoice</option>
+                            }
+                            @if (Model.DocumentType == "purchase_order")
+                            {
+                                <option value="purchase_order" selected>purchase_order</option>
+                            }
+                            else
+                            {
+                                <option value="purchase_order">purchase_order</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Supplier / company</label>
+                        <input name="supplierName" class="form-control" value="@Model.SupplierName" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Document number</label>
+                        <input name="documentNumber" class="form-control" value="@Model.DocumentNumber" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Issue date</label>
+                            <input name="issueDate" class="form-control" value="@Model.IssueDate" placeholder="yyyy-MM-dd" />
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Due date</label>
+                            <input name="dueDate" class="form-control" value="@Model.DueDate" />
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Currency</label>
+                        <input name="currency" class="form-control" value="@Model.Currency" maxlength="8" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label">Subtotal</label>
+                            <input name="subtotal" type="number" step="0.01" class="form-control" value="@Model.Subtotal" />
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label">Tax</label>
+                            <input name="tax" type="number" step="0.01" class="form-control" value="@Model.Tax" />
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label">Total</label>
+                            <input name="total" type="number" step="0.01" class="form-control" value="@Model.Total" />
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Line items (JSON)</label>
+                        <textarea name="lineItemsJson" class="form-control font-monospace small" rows="10" spellcheck="false">@lineItemsJson</textarea>
+                        <div class="form-text">Array of objects with <code>description</code>, <code>quantity</code>, <code>unitPrice</code>, <code>total</code> (names are case-insensitive).</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Raw extracted text</label>
+                        <textarea name="rawText" class="form-control font-monospace small" rows="6" spellcheck="false">@Model.RawText</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            @foreach (var s in mastery_task.Models.DocumentStatuses.All)
+                            {
+                                if (s == Model.Status)
+                                {
+                                    <option value="@s" selected>@s</option>
+                                }
+                                else
+                                {
+                                    <option value="@s">@s</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save &amp; re-validate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-3 mt-4">
+        <h5>Validation Issues</h5>
+        @if (Model.Issues.Count == 0)
+        {
+            <div class="alert alert-success mb-0">No validation issues.</div>
+        }
+        else
+        {
+            <ul class="mb-0">
+                @foreach (var issue in Model.Issues)
+                {
+                    <li><strong>@issue.Code</strong> (@issue.Severity): @issue.Message</li>
+                }
+            </ul>
+        }
+    </div>
+</div>

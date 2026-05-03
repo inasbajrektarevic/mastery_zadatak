@@ -1,0 +1,141 @@
+@model mastery_task.Models.DocumentsIndexViewModel
+
+@{
+    ViewData["Title"] = "Smart Document Processing";
+}
+
+<div class="container py-4">
+    <h2>Smart Document Processing System</h2>
+    <p class="text-muted">C# ASP.NET Core MVC implementation for ingestion, extraction, validation, review, and persistence.</p>
+
+    @if (TempData["Success"] is string ok)
+    {
+        <div class="alert alert-success">@ok</div>
+    }
+    @if (TempData["Error"] is string err)
+    {
+        <div class="alert alert-danger">@err</div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card p-3">
+                <div class="text-muted">Documents</div>
+                <div class="fs-4 fw-bold">@Model.Dashboard.TotalDocuments</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3">
+                <div class="text-muted">Total Issues</div>
+                <div class="fs-4 fw-bold">@Model.Dashboard.TotalIssues</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3">
+                <div class="text-muted">Validated</div>
+                <div class="fs-4 fw-bold">@(Model.Dashboard.StatusCounts.TryGetValue("Validated", out var v) ? v : 0)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card p-3">
+                <div class="text-muted">Uploaded</div>
+                <div class="fs-5 fw-bold">@(Model.Dashboard.StatusCounts.TryGetValue("Uploaded", out var uploaded) ? uploaded : 0)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3">
+                <div class="text-muted">Needs Review</div>
+                <div class="fs-5 fw-bold">@(Model.Dashboard.StatusCounts.TryGetValue("Needs Review", out var review) ? review : 0)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3">
+                <div class="text-muted">Rejected</div>
+                <div class="fs-5 fw-bold">@(Model.Dashboard.StatusCounts.TryGetValue("Rejected", out var rejected) ? rejected : 0)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Ingestion</h5>
+                <form asp-action="ProcessResources" method="post" class="mb-3">
+                    <button type="submit" class="btn btn-primary">Process resources folder</button>
+                </form>
+                <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                    <label class="form-label small text-muted mb-1">Manual upload</label>
+                    <p class="small text-muted mb-2">Prvo klikni <strong>Choose Files</strong> i odaberi jedan ili više fajlova (PDF, CSV, TXT, slike), pa tek onda <strong>Upload and process</strong>. Ako ništa ne odabereš, nema šta poslati.</p>
+                    <input type="file" name="files" multiple required class="form-control mb-2" accept=".pdf,.txt,.csv,.png,.jpg,.jpeg,.webp" />
+                    <button type="submit" class="btn btn-outline-primary">Upload and process</button>
+                </form>
+                <hr />
+                <form asp-action="Reset" method="post" onsubmit="return confirm('Delete all processed documents from database?');">
+                    <button type="submit" class="btn btn-outline-danger">Reset database</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Totals by Currency</h5>
+                @if (Model.Dashboard.TotalsByCurrency.Count == 0)
+                {
+                    <div class="text-muted">No currency totals yet.</div>
+                }
+                else
+                {
+                    <ul class="mb-0">
+                        @foreach (var pair in Model.Dashboard.TotalsByCurrency)
+                        {
+                            <li><strong>@pair.Key</strong>: @pair.Value</li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-3">
+        <h5>Processed Documents</h5>
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Source</th>
+                    <th>Type</th>
+                    <th>Supplier</th>
+                    <th>Number</th>
+                    <th>Currency</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Issues</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var doc in Model.Documents)
+                {
+                    <tr>
+                        <td>@doc.Id</td>
+                        <td>@doc.SourceFile</td>
+                        <td>@doc.DocumentType</td>
+                        <td>@doc.SupplierName</td>
+                        <td>@doc.DocumentNumber</td>
+                        <td>@doc.Currency</td>
+                        <td>@doc.Total</td>
+                        <td>@doc.Status</td>
+                        <td>@doc.Issues.Count</td>
+                        <td>
+                            <a asp-action="Review" asp-route-id="@doc.Id" class="btn btn-sm btn-secondary">Review</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

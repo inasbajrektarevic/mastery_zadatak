@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/.vscode/
+tests/
+.git/
+documents.db
+.uploads/
+*.user
+*.suo
